@@ -14,17 +14,19 @@
    limitations under the License.
 """
 
-# from .controller import *
+from .controller import *
 from .device import *
 from .discovery import *
 from .monitor import *
 from .service import *
+from .router import *
 
 
 __all__ = (
-    # controller.__all__,
+    controller.__all__,
     device.__all__,
     discovery.__all__,
     monitor.__all__,
-    service.__all__
+    service.__all__,
+    router.__all__
 )
