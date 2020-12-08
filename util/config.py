@@ -18,7 +18,6 @@ __all__ = ("config", "EnvVars")
 
 
 import simple_env_var
-import os
 
 
 @simple_env_var.configuration
