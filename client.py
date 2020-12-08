@@ -21,11 +21,8 @@ from util import mqtt
 from hue_bridge.discovery import discoverBridge
 from hue_bridge.monitor import Monitor
 # from hue_bridge.controller import Controller
-import paho.mqtt.client
 import signal
 import sys
-import json
-import mgw_dc
 
 
 initLogger(config.Logger.level)
