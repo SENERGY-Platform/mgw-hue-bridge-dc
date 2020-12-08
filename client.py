@@ -16,8 +16,7 @@
 
 
 from util import initLogger, conf, MQTTClient
-from hue_bridge.discovery import discoverBridge
-from hue_bridge.monitor import Monitor
+from hue_bridge import discover_hue_bridge, Monitor
 # from hue_bridge.controller import Controller
 import signal
 import sys
@@ -31,21 +30,15 @@ def sigtermHandler(_signo, _stack_frame):
     sys.exit(0)
 
 
-device_pool = dict()
-
-mqtt_client = MQTTClient()
-
-bridge_monitor = Monitor(mqtt_client=mqtt_client, device_pool=device_pool, bridge_id=conf.Bridge.id)
-
-# bridge_controller = Controller(device_manager, connector_client, config.Bridge.id)
-
-mqtt_client.on_connect = bridge_monitor.set_all_devices
-
-
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, sigtermHandler)
     try:
-        discoverBridge()
+        device_pool = dict()
+        mqtt_client = MQTTClient()
+        host = discover_hue_bridge()
+        bridge_monitor = Monitor(bridge_host=host, mqtt_client=mqtt_client, device_pool=device_pool, bridge_id=conf.Bridge.id)
+        # bridge_controller = Controller(device_manager, connector_client, config.Bridge.id)
+        mqtt_client.on_connect = bridge_monitor.set_all_devices
         bridge_monitor.start()
         # bridge_controller.start()
         mqtt_client.start()
