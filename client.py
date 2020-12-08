@@ -16,7 +16,7 @@
 
 
 from util import initLogger, conf, MQTTClient
-from hue_bridge import discover_hue_bridge, Monitor
+from hue_bridge import HueBridge, Monitor
 # from hue_bridge.controller import Controller
 import signal
 import sys
@@ -35,8 +35,9 @@ if __name__ == '__main__':
     try:
         device_pool = dict()
         mqtt_client = MQTTClient()
-        host = discover_hue_bridge()
-        bridge_monitor = Monitor(bridge_host=host, mqtt_client=mqtt_client, device_pool=device_pool, bridge_id=conf.Bridge.id)
+        hue_bridge = HueBridge(conf.Bridge.id)
+        hue_bridge.start_discovery()
+        bridge_monitor = Monitor(hue_bridge=hue_bridge, mqtt_client=mqtt_client, device_pool=device_pool)
         # bridge_controller = Controller(device_manager, connector_client, config.Bridge.id)
         mqtt_client.on_connect = bridge_monitor.set_all_devices
         bridge_monitor.start()
