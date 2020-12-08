@@ -50,6 +50,7 @@ class Config:
         nupnp_url = "https://discovery.meethue.com"
         device_query_delay = 10
         device_id_prefix = None
+        delay = 10
 
     @simple_env_var.section
     class Controller:
