@@ -17,6 +17,7 @@
 from .logger import *
 from .config import *
 from .mqtt import *
+import sys
 
 
 __all__ = (
@@ -24,3 +25,8 @@ __all__ = (
     logger.__all__,
     mqtt.__all__
 )
+
+
+def sigtermHandler(_signo, _stack_frame):
+    print("got SIGTERM - exiting ...")
+    sys.exit(0)
