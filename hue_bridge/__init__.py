@@ -16,7 +16,7 @@
 
 # from .controller import *
 from .device import *
-# from .discovery import *
+from .discovery import *
 from .monitor import *
 from .service import *
 
@@ -24,7 +24,7 @@ from .service import *
 __all__ = (
     # controller.__all__,
     device.__all__,
-    # discovery.__all__,
+    discovery.__all__,
     monitor.__all__,
     service.__all__
 )
