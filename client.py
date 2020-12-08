@@ -25,6 +25,7 @@ initLogger(conf.Logger.level)
 
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, sigtermHandler)
+    signal.signal(signal.SIGINT, sigtermHandler)
     try:
         device_pool = dict()
         mqtt_client = MQTTClient()
@@ -38,7 +39,5 @@ if __name__ == '__main__':
         bridge_monitor.start()
         bridge_controller.start()
         mqtt_client.start()
-    except KeyboardInterrupt:
-        print("\ninterrupted by user\n")
     finally:
         pass
