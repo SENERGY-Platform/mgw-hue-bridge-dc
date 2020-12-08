@@ -68,13 +68,6 @@ class Config:
 config = Config()
 
 
-class EnvVars:
-
-    class ModuleID:
-        name = "MODULE_ID"
-        value = os.getenv("MODULE_ID")
-
-
 if not all((config.Bridge.id, config.Bridge.api_path, config.Bridge.api_key)):
     exit('Please provide Hue Bridge information')
 
