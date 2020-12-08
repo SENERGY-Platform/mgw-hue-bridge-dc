@@ -20,6 +20,7 @@ __all__ = ("Monitor", )
 
 from util import getLogger, conf, MQTTClient
 from .device import Device
+from .discovery import HueBridge
 from threading import Thread
 import time
 import requests
@@ -32,9 +33,9 @@ logger = getLogger(__name__.split(".", 1)[-1])
 
 
 class Monitor(Thread):
-    def __init__(self, bridge_host: str, mqtt_client: MQTTClient, device_pool: typing.Dict[str, Device], bridge_id: str):
-        super().__init__(name="monitor-{}".format(bridge_id), daemon=True)
-        self.__bridge_host = bridge_host
+    def __init__(self, hue_bridge: HueBridge, mqtt_client: MQTTClient, device_pool: typing.Dict[str, Device]):
+        super().__init__(name="monitor-{}".format(hue_bridge.id), daemon=True)
+        self.__hue_bridge = hue_bridge
         self.__mqtt_client = mqtt_client
         self.__device_pool = device_pool
 
@@ -49,8 +50,9 @@ class Monitor(Thread):
     def __queryBridge(self):
         try:
             resp = requests.get(
-                "https://{}/{}/{}/lights".format(self.__bridge_host, conf.Bridge.api_path, conf.Bridge.api_key),
-                verify=False
+                "https://{}/{}/{}/lights".format(self.__hue_bridge.host, conf.Bridge.api_path, conf.Bridge.api_key),
+                verify=False,
+                timeout=conf.Discovery.timeout
             )
             if resp.ok:
                 data = resp.json()
