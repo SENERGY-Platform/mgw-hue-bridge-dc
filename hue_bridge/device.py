@@ -18,15 +18,15 @@
 __all__ = ("Device", )
 
 
-from util.config import config
+from util import conf
 import mgw_dc
 
 
 class Device(mgw_dc.dm.Device):
     __type_map = {
-        "Extended color light": config.Senergy.dt_extended_color_light,
-        "Color light": config.Senergy.dt_color_light,
-        "On/Off plug-in unit": config.Senergy.dt_on_off_plug_in_unit
+        "Extended color light": conf.Senergy.dt_extended_color_light,
+        "Color light": conf.Senergy.dt_color_light,
+        "On/Off plug-in unit": conf.Senergy.dt_on_off_plug_in_unit
     }
 
     def __init__(self, id: str, name: str, type: str, model: str, number: str, info: dict):

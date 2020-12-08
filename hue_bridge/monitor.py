@@ -15,9 +15,10 @@
 """
 
 
-from util.logger import getLogger
-from util.config import config
-from util import mqtt
+__all__ = ("Monitor", )
+
+
+from util import getLogger, conf, MQTTClient
 from .device import Device
 from threading import Thread
 import time
@@ -42,12 +43,12 @@ class Monitor(Thread):
             queried_devices = self.__queryBridge()
             if queried_devices:
                 self.__evaluate(queried_devices)
-            time.sleep(config.Discovery.device_query_delay)
+            time.sleep(conf.Discovery.device_query_delay)
 
     def __queryBridge(self):
         try:
             resp = requests.get(
-                "https://{}/{}/{}/lights".format(config.Bridge.host, config.Bridge.api_path, config.Bridge.api_key),
+                "https://{}/{}/{}/lights".format(conf.Bridge.host, conf.Bridge.api_path, conf.Bridge.api_key),
                 verify=False
             )
             if resp.ok:
@@ -55,7 +56,7 @@ class Monitor(Thread):
                 devices = dict()
                 for number, device in data.items():
                     try:
-                        devices["{}{}".format(config.Discovery.device_id_prefix, device["uniqueid"])] = (
+                        devices["{}{}".format(conf.Discovery.device_id_prefix, device["uniqueid"])] = (
                             {
                                 "name": device["name"],
                                 "model": device["modelid"],
@@ -82,7 +83,7 @@ class Monitor(Thread):
             device = self.__device_pool[device_id]
             logger.info("can't find '{}' with id '{}'".format(device.name, device.id))
             self.__mqtt_client.publish(
-                topic=mgw_dc.dm.gen_device_topic(config.Client.id),
+                topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
                 payload=json.dumps(mgw_dc.dm.gen_delete_device_msg(device)),
                 qos=2
             )
@@ -103,7 +104,7 @@ class Monitor(Thread):
             )
             logger.info("found '{}' with id '{}'".format(device.name, device_id))
             self.__mqtt_client.publish(
-                topic=mgw_dc.dm.gen_device_topic(config.Client.id),
+                topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
                 payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
                 qos=2
             )
@@ -122,7 +123,7 @@ class Monitor(Thread):
             device.info = data["info"]
             try:
                 self.__mqtt_client.publish(
-                    topic=mgw_dc.dm.gen_device_topic(config.Client.id),
+                    topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
                     payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
                     qos=2
                 )
@@ -159,7 +160,7 @@ class Monitor(Thread):
         for device in self.__device_pool.values():
             try:
                 self.__mqtt_client.publish(
-                    topic=mgw_dc.dm.gen_device_topic(config.Client.id),
+                    topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
                     payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
                     qos=2
                 )

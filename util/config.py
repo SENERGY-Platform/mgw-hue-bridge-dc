@@ -14,7 +14,7 @@
    limitations under the License.
 """
 
-__all__ = ("config", "EnvVars")
+__all__ = ("conf",)
 
 
 import simple_env_var
@@ -64,11 +64,11 @@ class Config:
         dt_color_light = None
 
 
-config = Config()
+conf = Config()
 
 
-if not all((config.Bridge.id, config.Bridge.api_path, config.Bridge.api_key)):
+if not all((conf.Bridge.id, conf.Bridge.api_path, conf.Bridge.api_key)):
     exit('Please provide Hue Bridge information')
 
-if not all((config.Senergy.dt_extended_color_light, config.Senergy.dt_on_off_plug_in_unit, config.Senergy.dt_color_light)):
+if not all((conf.Senergy.dt_extended_color_light, conf.Senergy.dt_on_off_plug_in_unit, conf.Senergy.dt_color_light)):
     exit('Please provide a SENERGY device types')
