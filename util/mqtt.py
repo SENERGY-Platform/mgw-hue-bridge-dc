@@ -44,7 +44,6 @@ class Client:
 
     def __on_connect(self, client, userdata, flags, rc):
         if rc == 0:
-            self.__discon_count = 0
             logger.info("connected to '{}'".format(config.MsgBroker.host))
             self.on_connect()
         else:
