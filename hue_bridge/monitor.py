@@ -32,10 +32,11 @@ logger = getLogger(__name__.split(".", 1)[-1])
 
 
 class Monitor(Thread):
-    def __init__(self, mqtt_client: MQTTClient, device_pool: typing.Dict[str, Device], bridge_id: str):
+    def __init__(self, bridge_host: str, mqtt_client: MQTTClient, device_pool: typing.Dict[str, Device], bridge_id: str):
         super().__init__(name="monitor-{}".format(bridge_id), daemon=True)
-        self.__device_pool = device_pool
+        self.__bridge_host = bridge_host
         self.__mqtt_client = mqtt_client
+        self.__device_pool = device_pool
 
     def run(self):
         logger.info("starting '{}' ...".format(self.name))
@@ -48,7 +49,7 @@ class Monitor(Thread):
     def __queryBridge(self):
         try:
             resp = requests.get(
-                "https://{}/{}/{}/lights".format(conf.Bridge.host, conf.Bridge.api_path, conf.Bridge.api_key),
+                "https://{}/{}/{}/lights".format(self.__bridge_host, conf.Bridge.api_path, conf.Bridge.api_key),
                 verify=False
             )
             if resp.ok:
