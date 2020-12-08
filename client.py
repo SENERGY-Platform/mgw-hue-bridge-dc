@@ -15,9 +15,7 @@
 """
 
 
-from util.logger import initLogger
-from util.config import conf
-from util import mqtt
+from util import initLogger, conf, MQTTClient
 from hue_bridge.discovery import discoverBridge
 from hue_bridge.monitor import Monitor
 # from hue_bridge.controller import Controller
@@ -35,7 +33,7 @@ def sigtermHandler(_signo, _stack_frame):
 
 device_pool = dict()
 
-mqtt_client = mqtt.MQTTClient()
+mqtt_client = MQTTClient()
 
 bridge_monitor = Monitor(mqtt_client=mqtt_client, device_pool=device_pool, bridge_id=conf.Bridge.id)
 
