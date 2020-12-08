@@ -43,14 +43,15 @@ bridge_monitor = Monitor(mqtt_client=mqtt_client, device_pool=device_pool, bridg
 
 mqtt_client.on_connect = bridge_monitor.set_all_devices
 
+
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, sigtermHandler)
-    discoverBridge()
-    mqtt_client.start()
-    bridge_monitor.start()
-    # bridge_controller.start()
     try:
-        bridge_monitor.join()
-        # bridge_controller.join()
+        discoverBridge()
+        bridge_monitor.start()
+        # bridge_controller.start()
+        mqtt_client.start()
     except KeyboardInterrupt:
         print("\ninterrupted by user\n")
+    finally:
+        pass
