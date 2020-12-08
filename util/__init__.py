@@ -14,8 +14,8 @@
    limitations under the License.
 """
 
-from .config import *
 from .logger import *
+from .config import *
 from .mqtt import *
 
 
