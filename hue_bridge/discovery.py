@@ -15,7 +15,7 @@
 """
 
 
-__all__ = ("discover_hue_bridge", )
+__all__ = ("HueBridge", )
 
 
 from util import getLogger, conf
@@ -87,14 +87,14 @@ def discover_hosts() -> list:
     return alive_hosts
 
 
-def discover_NUPnP() -> str:
+def discover_NUPnP(bridge_id) -> str:
     try:
-        response = requests.get(conf.Discovery.nupnp_url)
+        response = requests.get(conf.Discovery.nupnp_url, timeout=conf.Discovery.timeout)
         if response.status_code == 200:
             host_list = response.json()
             for host in host_list:
                 try:
-                    if host.get('id').upper() in conf.Bridge.id:
+                    if host.get('id').upper() in bridge_id:
                         return host.get('internalipaddress')
                 except AttributeError:
                     logger.error("could not extract host ip from '{}'".format(host))
@@ -104,7 +104,7 @@ def discover_NUPnP() -> str:
 
 def probe_host(host) -> bool:
     try:
-        response = requests.head("http://{}/{}/na/config".format(host, conf.Bridge.api_path))
+        response = requests.head("http://{}/{}/na/config".format(host, conf.Bridge.api_path), timeout=conf.Discovery.timeout)
         if response.status_code == 200:
                 return True
     except Exception:
@@ -112,41 +112,45 @@ def probe_host(host) -> bool:
     return False
 
 
-def validate_host(host) -> bool:
+def validate_host(host, bridge_id) -> bool:
     try:
-        response = requests.get("https://{}/{}/na/config".format(host, conf.Bridge.api_path), verify=False)
+        response = requests.get(
+            "https://{}/{}/na/config".format(host, conf.Bridge.api_path),
+            verify=False,
+            timeout=conf.Discovery.timeout
+        )
         if response.status_code == 200:
             host_info = response.json()
-            if host_info.get('bridgeid') in conf.Bridge.id:
+            if host_info.get('bridgeid') in bridge_id:
                 return True
     except Exception:
         pass
     return False
 
 
-def validate_hosts_worker(hosts, valid_hosts):
+def validate_hosts_worker(hosts, valid_hosts, bridge_id):
     for host in hosts:
-        if probe_host(host) and validate_host(host):
-            valid_hosts[conf.Bridge.id] = host
+        if probe_host(host) and validate_host(host, bridge_id):
+            valid_hosts[bridge_id] = host
 
 
-def validate_hosts(hosts) -> dict:
+def validate_hosts(hosts, bridge_id) -> dict:
     valid_hosts = dict()
     workers = list()
     bin = 0
     bin_size = 2
     if len(hosts) <= bin_size:
-        worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts, valid_hosts))
+        worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts, valid_hosts, bridge_id))
         workers.append(worker)
         worker.start()
     else:
         for i in range(int(len(hosts) / bin_size)):
-            worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts[bin:bin + bin_size], valid_hosts))
+            worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts[bin:bin + bin_size], valid_hosts, bridge_id))
             workers.append(worker)
             worker.start()
             bin = bin + bin_size
         if hosts[bin:]:
-            worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts[bin:], valid_hosts))
+            worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts[bin:], valid_hosts, bridge_id))
             workers.append(worker)
             worker.start()
     for worker in workers:
@@ -154,25 +158,61 @@ def validate_hosts(hosts) -> dict:
     return valid_hosts
 
 
-def discover_hue_bridge():
-    host = None
-    while not host:
+class HueBridge:
+    def __init__(self, id: str):
+        self.__id = id
+        self.__host = None
+        self.__thread = threading.Thread(name="discovery-{}".format(id), target=self.__rediscover, daemon=True)
+
+    @property
+    def host(self):
+        return self.__host
+
+    @property
+    def id(self):
+        return self.__id
+
+    def start_discovery(self):
+        while not self.__host:
+            self.__host = self.__discover()
+            if not self.__host:
+                time.sleep(conf.Discovery.delay)
+        logger.info("discovered '{}' at '{}'".format(self.__id, self.__host))
+        self.__thread.start()
+
+    def __discover(self):
+        logger.info("trying to discover '{}' ...".format(self.__id))
         try:
-            host = discover_NUPnP()
-            if host and not validate_host(host):
-                host = None
-            if not host:
-                logger.warning("could not discover host via NUPnP - reverting to ip range scan")
-                valid_hosts = validate_hosts(discover_hosts())
-                if valid_hosts:
-                    host = valid_hosts[conf.Bridge.id]
-                    continue
-                else:
-                    logger.warning("ip range scan yielded no results")
-            else:
-                continue
+            host = discover_NUPnP(self.__id)
+            if host and validate_host(host, self.__id):
+                return host
+            logger.warning("could not discover '{}' via NUPnP - reverting to ip range scan".format(self.__id))
+            valid_hosts = validate_hosts(discover_hosts(), self.__id)
+            if valid_hosts:
+                return valid_hosts[self.__id]
+            logger.warning("ip range scan yielded no results for '{}'".format(self.__id))
         except Exception as ex:
-            logger.error("discovery failed - {}".format(ex))
-        time.sleep(conf.Discovery.delay)
-    logger.info("discovered hue bridge '{}' at '{}'".format(conf.Bridge.id, host))
-    return host
+            logger.error("discovery of '{}' failed - {}".format(self.__id, ex))
+        return None
+
+    def __rediscover(self):
+        fail_safe = 0
+        while True:
+            delay = conf.Discovery.check_delay
+            if not validate_host(self.__host, self.__id):
+                if fail_safe > conf.Discovery.check_fail_safe:
+                    logger.warning("location of '{}' seems to have changed or is not reachable".format(self.__id))
+                    host = self.__discover()
+                    if host:
+                        fail_safe = 0
+                        self.__host = host
+                        logger.info("discovered '{}' at '{}'".format(self.__id, self.__host))
+                    else:
+                        delay = conf.Discovery.delay
+                else:
+                    fail_safe += 1
+            else:
+                if fail_safe > 0:
+                    logger.info("location of '{}' is unchanged and reachable".format(self.__id))
+                fail_safe = 0
+            time.sleep(delay)
