@@ -32,10 +32,10 @@ if __name__ == '__main__':
         hue_bridge = HueBridge(conf.Bridge.id)
         hue_bridge.start_discovery()
         bridge_monitor = Monitor(hue_bridge=hue_bridge, mqtt_client=mqtt_client, device_pool=device_pool)
-        # bridge_controller = Controller(device_manager, connector_client, config.Bridge.id)
+        bridge_controller = Controller(hue_bridge=hue_bridge, device_pool=device_pool, command_queue=router.cmd_queue, mqtt_client=mqtt_client)
         mqtt_client.on_connect = bridge_monitor.set_all_devices
         bridge_monitor.start()
-        # bridge_controller.start()
+        bridge_controller.start()
         mqtt_client.start()
     except KeyboardInterrupt:
         print("\ninterrupted by user\n")
