@@ -61,7 +61,8 @@ def put(d_number: str, data: dict):
                 d_number
             ),
             json=data,
-            verify=False
+            verify=False,
+            timeout=conf.Discovery.timeout
         )
         if resp.status_code == 200:
             resp = resp.json()
@@ -87,7 +88,8 @@ def get(d_number: str):
                 conf.Bridge.api_key,
                 d_number
             ),
-            verify=False
+            verify=False,
+            timeout=conf.Discovery.timeout
         )
         if resp.status_code == 200:
             resp = resp.json()
