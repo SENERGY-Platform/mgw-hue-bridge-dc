@@ -14,7 +14,7 @@
    limitations under the License.
 """
 
-__all__ = ("getLogger", "initLogger", "logging_levels")
+__all__ = ("getLogger", "initLogger")
 
 
 import logging
