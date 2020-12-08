@@ -78,7 +78,7 @@ class Monitor(Thread):
                 return devices
             else:
                 logger.error("could not query bridge - '{}'".format(resp.status_code))
-        except requests.exceptions.RequestException as ex:
+        except Exception as ex:
             logger.error("could not query bridge - '{}'".format(ex))
 
     def __handle_missing_device(self, device_id: str):
