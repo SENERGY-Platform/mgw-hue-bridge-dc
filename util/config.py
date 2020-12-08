@@ -41,7 +41,6 @@ class Config:
 
     @simple_env_var.section
     class Bridge:
-        host = None
         api_path = "api"
         api_key = None
         id = None
