@@ -35,7 +35,7 @@ def sigtermHandler(_signo, _stack_frame):
 
 device_pool = dict()
 
-mqtt_client = mqtt.Client()
+mqtt_client = mqtt.MQTTClient()
 
 bridge_monitor = Monitor(mqtt_client=mqtt_client, device_pool=device_pool, bridge_id=config.Bridge.id)
 

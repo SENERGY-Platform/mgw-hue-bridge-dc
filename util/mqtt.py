@@ -14,7 +14,7 @@
    limitations under the License.
 """
 
-__all__ = ("Client", )
+__all__ = ("MQTTClient", )
 
 
 from .logger import getLogger
@@ -27,7 +27,7 @@ import mgw_dc
 logger = getLogger(__name__.split(".", 1)[-1])
 
 
-class Client:
+class MQTTClient:
     def __init__(self):
         self.__client = paho.mqtt.client.Client(
             client_id=config.Client.id,

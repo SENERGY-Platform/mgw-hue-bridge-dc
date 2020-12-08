@@ -31,7 +31,7 @@ logger = getLogger(__name__.split(".", 1)[-1])
 
 
 class Monitor(Thread):
-    def __init__(self, mqtt_client: mqtt.Client, device_pool: typing.Dict[str, Device], bridge_id: str):
+    def __init__(self, mqtt_client: MQTTClient, device_pool: typing.Dict[str, Device], bridge_id: str):
         super().__init__(name="monitor-{}".format(bridge_id), daemon=True)
         self.__device_pool = device_pool
         self.__mqtt_client = mqtt_client
