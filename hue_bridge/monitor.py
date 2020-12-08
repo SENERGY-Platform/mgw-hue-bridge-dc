@@ -124,18 +124,18 @@ class Monitor(Thread):
             device.model = data["model"]
             device.number = data["number"]
             device.info = data["info"]
-            try:
-                self.__mqtt_client.publish(
-                    topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
-                    payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
-                    qos=2
-                )
-            except Exception as ex:
-                device.name = backup["name"]
-                device.number = backup["number"]
-                device.model = backup["model"]
-                device.info = backup["info"]
-                raise ex
+            if backup["name"] != data["name"] or backup["info"]["reachable"] != data["info"]["reachable"]:
+                try:
+                    self.__mqtt_client.publish(
+                        topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
+                        payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
+                        qos=2
+                    )
+                except Exception as ex:
+                    device.name = backup["name"]
+                    data["info"]["reachable"] = backup["info"]["reachable"]
+                    device.info = data["info"]
+                    raise ex
         except Exception as ex:
             logger.error("can't update '{}' - {}".format(device_id, ex))
 
