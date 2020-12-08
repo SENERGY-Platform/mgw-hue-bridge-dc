@@ -62,7 +62,7 @@ class Client:
         while True:
             try:
                 self.__client.connect(config.MsgBroker.host, config.MsgBroker.port, keepalive=config.Client.keep_alive)
-                self.__client.loop_start()
+                self.__client.loop_forever()
                 break
             except Exception as ex:
                 logger.error(
