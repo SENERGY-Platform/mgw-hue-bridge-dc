@@ -20,7 +20,6 @@ from util.config import config
 from util import mqtt
 from .device import Device
 from threading import Thread
-import paho.mqtt.client
 import time
 import requests
 import typing
