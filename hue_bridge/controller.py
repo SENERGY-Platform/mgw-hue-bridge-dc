@@ -57,10 +57,10 @@ class Worker(threading.Thread):
                     logger.error("{}: unknown service - {}".format(self.name, ex))
                     resp_msg = mgw_dc.com.gen_response_msg(cmd[mgw_dc.com.command.id], json.dumps({"status": 1}))
                 except json.JSONDecodeError as ex:
-                    logger.error("{}: could not parse command data - {}".format(self.name, ex))
+                    logger.error("{}: could not parse command - {}".format(self.name, ex))
                     resp_msg = mgw_dc.com.gen_response_msg(cmd[mgw_dc.com.command.id], json.dumps({"status": 1}))
                 except TypeError as ex:
-                    logger.error("{}: could not parse command response data - {}".format(self.name, ex))
+                    logger.error("{}: calling service failed or bad response - {}".format(self.name, ex))
                     resp_msg = mgw_dc.com.gen_response_msg(cmd[mgw_dc.com.command.id], json.dumps({"status": 1}))
                 logger.debug("{}: '{}'".format(self.name, resp_msg))
                 try:
@@ -71,7 +71,7 @@ class Worker(threading.Thread):
                     )
                 except Exception as ex:
                     logger.error(
-                        "{}: could not send response message for '{}' - {}".format(
+                        "{}: could not send response for '{}' - {}".format(
                             self.name,
                             cmd[mgw_dc.com.command.id],
                             ex
