@@ -7,4 +7,4 @@ WORKDIR /usr/src/app
 COPY . .
 RUN pip install -r requirements.txt
 
-CMD [ "python", "-u", "./client.py"]
+CMD [ "python", "-u", "./dc.py"]
