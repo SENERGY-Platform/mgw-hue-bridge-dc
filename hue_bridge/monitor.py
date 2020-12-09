@@ -43,12 +43,12 @@ class Monitor(Thread):
     def run(self):
         logger.info("starting '{}' ...".format(self.name))
         while True:
+            time.sleep(conf.Discovery.device_query_delay)
             if self.__refresh_flag:
                 self.__refresh_devices()
             queried_devices = self.__queryBridge()
             if queried_devices:
                 self.__evaluate(queried_devices)
-            time.sleep(conf.Discovery.device_query_delay)
 
     def __queryBridge(self):
         try:
