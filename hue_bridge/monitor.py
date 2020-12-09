@@ -162,7 +162,7 @@ class Monitor(Thread):
         except Exception as ex:
             logger.error("can't evaluate devices - {}".format(ex))
 
-    def set_all_devices(self):
+    def __refresh_devices(self):
         for device in self.__device_pool.values():
             try:
                 self.__mqtt_client.publish(
