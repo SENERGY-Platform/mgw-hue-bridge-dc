@@ -102,6 +102,7 @@ class Monitor(Thread):
             device = Device(
                 id=device_id,
                 type=data[1]["product_type"],
+                bridge=self.__hue_bridge,
                 **data[0]
             )
             logger.info("found '{}' with id '{}'".format(device.name, device_id))
