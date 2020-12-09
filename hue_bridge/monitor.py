@@ -38,7 +38,7 @@ class Monitor(Thread):
         self.__hue_bridge = hue_bridge
         self.__mqtt_client = mqtt_client
         self.__device_pool = device_pool
-        self.__refresh_flag = False
+        self.__refresh_flag = None
 
     def run(self):
         logger.info("starting '{}' ...".format(self.name))
@@ -166,7 +166,6 @@ class Monitor(Thread):
             logger.error("can't evaluate devices - {}".format(ex))
 
     def __refresh_devices(self):
-        self.__refresh_flag = False
         for device in self.__device_pool.values():
             try:
                 self.__mqtt_client.publish(
@@ -174,10 +173,14 @@ class Monitor(Thread):
                     payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
                     qos=1
                 )
-                self.__mqtt_client.subscribe(topic=mgw_dc.com.gen_command_topic(device.id), qos=1)
             except Exception as ex:
-                self.__refresh_flag = True
-                logger.error("setting and subscribing device '{}' failed - {}".format(device.id, ex))
+                logger.error("setting device '{}' failed - {}".format(device.id, ex))
+            if self.__refresh_flag > 1:
+                try:
+                    self.__mqtt_client.subscribe(topic=mgw_dc.com.gen_command_topic(device.id), qos=1)
+                except Exception as ex:
+                    logger.error("subscribing device '{}' failed - {}".format(device.id, ex))
+        self.__refresh_flag = None
 
-    def schedule_refresh(self):
-        self.__refresh_flag = True
+    def schedule_refresh(self, subscribe: bool = False):
+        self.__refresh_flag = int(subscribe) + 1
