@@ -94,16 +94,14 @@ class Worker(threading.Thread):
 
 
 class Controller(threading.Thread):
-    def __init__(self, hue_bridge: HueBridge, device_pool: dict, command_queue: queue.Queue, mqtt_client: MQTTClient):
-        super().__init__(name="controller-{}".format(hue_bridge.id), daemon=True)
-        self.__hue_bridge = hue_bridge
+    def __init__(self, device_pool: dict, mqtt_client: MQTTClient):
+        super().__init__(name="controller", daemon=True)
         self.__device_pool = device_pool
-        self.__command_queue = command_queue
         self.__mqtt_client = mqtt_client
+        self.__command_queue = queue.Queue()
         self.__worker_pool = dict()
 
     def run(self):
-        logger.info("starting '{}' ...".format(self.name))
         garbage_collector_time = time.time()
         while True:
             try:
@@ -111,7 +109,7 @@ class Controller(threading.Thread):
                 try:
                     device = self.__device_pool[cmd[0]]
                     if device.id not in self.__worker_pool:
-                        worker = Worker(device=device, hue_bridge=self.__hue_bridge, mqtt_client=self.__mqtt_client)
+                        worker = Worker(device=device, mqtt_client=self.__mqtt_client)
                         worker.start()
                         self.__worker_pool[device.id] = worker
                     else:
