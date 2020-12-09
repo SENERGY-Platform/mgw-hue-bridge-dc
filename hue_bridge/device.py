@@ -19,6 +19,7 @@ __all__ = ("Device", )
 
 
 from util import conf
+from .discovery import HueBridge
 import mgw_dc
 
 
@@ -29,11 +30,12 @@ class Device(mgw_dc.dm.Device):
         "On/Off plug-in unit": conf.Senergy.dt_on_off_plug_in_unit
     }
 
-    def __init__(self, id: str, name: str, type: str, model: str, number: str, info: dict):
+    def __init__(self, id: str, name: str, type: str, model: str, number: str, info: dict, bridge: HueBridge):
         super().__init__(id, name, Device.__type_map[type])
         self.model = model
         self.number = number
         self.info = info
+        self.bridge = bridge
 
     @property
     def info(self) -> dict:
