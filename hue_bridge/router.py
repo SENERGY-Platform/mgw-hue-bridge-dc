@@ -19,8 +19,6 @@ __all__ = ("Router", )
 
 
 from util import getLogger
-import json
-import queue
 import typing
 import mgw_dc
 
@@ -29,11 +27,15 @@ logger = getLogger(__name__.split(".", 1)[-1])
 
 
 class Router:
-    def __init__(self):
-        self.cmd_queue = queue.Queue()
+    def __init__(self, refresh_callback: typing.Callable, command_callback: typing.Callable):
+        self.__refresh_callback = refresh_callback
+        self.__command_callback = command_callback
 
     def route(self, topic: str, payload: typing.AnyStr):
         try:
-            self.cmd_queue.put_nowait((*mgw_dc.com.parse_command_topic(topic), json.loads(payload)))
+            if topic == mgw_dc.dm.gen_refresh_topic():
+                self.__refresh_callback()
+            else:
+                self.__command_callback((*mgw_dc.com.parse_command_topic(topic), payload))
         except Exception as ex:
             logger.error("can't route message - {}\n{}: {}".format(ex, topic, payload))
