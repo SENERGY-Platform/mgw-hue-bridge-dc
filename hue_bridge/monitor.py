@@ -147,16 +147,19 @@ class Monitor(Thread):
         return missing, new, changed
 
     def __evaluate(self, queried_devices):
-        missing_devices, new_devices, changed_devices = self.__diff(self.__device_pool, queried_devices)
-        if missing_devices:
-            for device_id in missing_devices:
-                self.__handle_missing_device(device_id)
-        if new_devices:
-            for device_id in new_devices:
-                self.__handle_new_device(device_id, queried_devices[device_id])
-        if changed_devices:
-            for device_id in changed_devices:
-                self.__handle_changed_device(device_id, queried_devices[device_id][0])
+        try:
+            missing_devices, new_devices, changed_devices = self.__diff(self.__device_pool, queried_devices)
+            if missing_devices:
+                for device_id in missing_devices:
+                    self.__handle_missing_device(device_id)
+            if new_devices:
+                for device_id in new_devices:
+                    self.__handle_new_device(device_id, queried_devices[device_id])
+            if changed_devices:
+                for device_id in changed_devices:
+                    self.__handle_changed_device(device_id, queried_devices[device_id][0])
+        except Exception as ex:
+            logger.error("can't evaluate devices - {}".format(ex))
 
     def set_all_devices(self):
         for device in self.__device_pool.values():
