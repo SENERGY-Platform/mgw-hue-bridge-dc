@@ -21,7 +21,7 @@ __all__ = ("Monitor", )
 from util import getLogger, conf, MQTTClient
 from .device import Device
 from .discovery import HueBridge
-from threading import Thread
+import threading
 import time
 import requests
 import typing
@@ -32,20 +32,21 @@ import mgw_dc
 logger = getLogger(__name__.split(".", 1)[-1])
 
 
-class Monitor(Thread):
+class Monitor(threading.Thread):
     def __init__(self, hue_bridge: HueBridge, mqtt_client: MQTTClient, device_pool: typing.Dict[str, Device]):
         super().__init__(name="monitor-{}".format(hue_bridge.id), daemon=True)
         self.__hue_bridge = hue_bridge
         self.__mqtt_client = mqtt_client
         self.__device_pool = device_pool
-        self.__refresh_flag = None
+        self.__refresh_flag = 0
+        self.__lock = threading.Lock()
 
     def run(self):
         logger.info("starting '{}' ...".format(self.name))
         while True:
             time.sleep(conf.Discovery.device_query_delay)
             if self.__refresh_flag:
-                self.__refresh_devices()
+                self.__refresh_devices(self.__refresh_flag)
             queried_devices = self.__queryBridge()
             if queried_devices:
                 self.__evaluate(queried_devices)
@@ -165,7 +166,10 @@ class Monitor(Thread):
         except Exception as ex:
             logger.error("can't evaluate devices - {}".format(ex))
 
-    def __refresh_devices(self):
+    def __refresh_devices(self, flag: int):
+        with self.__lock:
+            if self.__refresh_flag == flag:
+                self.__refresh_flag = 0
         for device in self.__device_pool.values():
             try:
                 self.__mqtt_client.publish(
@@ -175,12 +179,13 @@ class Monitor(Thread):
                 )
             except Exception as ex:
                 logger.error("setting device '{}' failed - {}".format(device.id, ex))
-            if self.__refresh_flag > 1:
+            if flag > 1:
                 try:
                     self.__mqtt_client.subscribe(topic=mgw_dc.com.gen_command_topic(device.id), qos=1)
                 except Exception as ex:
                     logger.error("subscribing device '{}' failed - {}".format(device.id, ex))
-        self.__refresh_flag = None
 
     def schedule_refresh(self, subscribe: bool = False):
-        self.__refresh_flag = int(subscribe) + 1
+        with self.__lock:
+            self.__refresh_flag = max(self.__refresh_flag, int(subscribe) + 1)
+
