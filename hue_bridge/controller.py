@@ -33,10 +33,9 @@ logger = getLogger(__name__.split(".", 1)[-1])
 
 
 class Worker(threading.Thread):
-    def __init__(self, device: Device, hue_bridge: HueBridge, mqtt_client: MQTTClient):
+    def __init__(self, device: Device, mqtt_client: MQTTClient):
         super().__init__(name="worker-{}".format(device.id), daemon=True)
         self.__device = device
-        self.__hue_bridge = hue_bridge
         self.__mqtt_client = mqtt_client
         self.__stop = False
         self.__command_queue = queue.Queue()
@@ -47,11 +46,12 @@ class Worker(threading.Thread):
             try:
                 dev_id, srv_id, cmd = self.__command_queue.get(timeout=30)
                 logger.debug("{}: '{}' <- '{}'".format(self.name, srv_id, cmd))
+                cmd = json.loads(cmd)
                 try:
                     if cmd.get(mgw_dc.com.command.data):
-                        data = service_map[srv_id](self.__hue_bridge.host, self.__device, **json.loads(cmd[mgw_dc.com.command.data]))
+                        data = service_map[srv_id](self.__device, **json.loads(cmd[mgw_dc.com.command.data]))
                     else:
-                        data = service_map[srv_id](self.__hue_bridge.host, self.__device)
+                        data = service_map[srv_id](self.__device)
                     resp_msg = mgw_dc.com.gen_response_msg(cmd[mgw_dc.com.command.id], json.dumps(data))
                 except KeyError as ex:
                     logger.error("{}: unknown service - {}".format(self.name, ex))
