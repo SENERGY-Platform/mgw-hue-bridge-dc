@@ -73,8 +73,7 @@ class Monitor(Thread):
                             }
                         )
                     except KeyError as ex:
-                        logger.error("could not parse device - {}".format(ex))
-                        logger.debug(device)
+                        logger.error("could not parse device - {}\n{}".format(ex, device))
                 return devices
             else:
                 logger.error("could not query bridge - '{}'".format(resp.status_code))
