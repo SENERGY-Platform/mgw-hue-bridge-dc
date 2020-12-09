@@ -21,7 +21,7 @@ import simple_env_var
 
 
 @simple_env_var.configuration
-class Config:
+class Conf:
 
     @simple_env_var.section
     class MsgBroker:
@@ -67,7 +67,7 @@ class Config:
         dt_color_light = None
 
 
-conf = Config()
+conf = Conf()
 
 
 if not all((conf.Bridge.id, conf.Bridge.api_path, conf.Bridge.api_key)):
