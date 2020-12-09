@@ -79,6 +79,8 @@ class Worker(threading.Thread):
                     )
             except queue.Empty:
                 pass
+            except Exception as ex:
+                logger.error("{}: command execution failed - {}".format(self.name, ex))
         del self.__device
         del self.__mqtt_client
         del self.__command_queue
