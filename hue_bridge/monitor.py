@@ -76,7 +76,7 @@ class Monitor(Thread):
                         logger.error("could not parse device - {}\n{}".format(ex, device))
                 return devices
             else:
-                logger.error("could not query bridge - '{}'".format(resp.status_code))
+                raise RuntimeError(resp.status_code)
         except Exception as ex:
             logger.error("could not query bridge - '{}'".format(ex))
 
