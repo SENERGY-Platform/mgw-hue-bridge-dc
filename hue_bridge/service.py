@@ -108,9 +108,9 @@ def get(host: str, d_number: str):
 ### Services ###
 
 
-def set_power(host: str, device: Device, power: bool):
+def set_power(device: Device, power: bool):
     err, body = put(
-        host,
+        device.bridge.host,
         device.number,
         {
             "on": power
@@ -121,13 +121,13 @@ def set_power(host: str, device: Device, power: bool):
     return {"status": err}
 
 
-def get_power(host: str, device: Device):
+def get_power(device: Device):
     payload = {
         "power": device.info["on"],
         "status": 0,
         "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
     }
-    err, body = get(host, device.number)
+    err, body = get(device.bridge.host, device.number)
     if err:
         logger.warning("get power for '{}' failed - using possibly stale data - {}".format(device.id, body))
     else:
@@ -135,9 +135,9 @@ def get_power(host: str, device: Device):
     return payload
 
 
-def set_color(host: str, device: Device, red: int, green: int, blue: int, duration: float):
+def set_color(device: Device, red: int, green: int, blue: int, duration: float):
     err, body = put(
-        host,
+        device.bridge.host,
         device.number,
         {
             "on": True,
@@ -150,7 +150,7 @@ def set_color(host: str, device: Device, red: int, green: int, blue: int, durati
     return {"status": err}
 
 
-def get_color(host: str, device: Device):
+def get_color(device: Device):
     r, g, b = get_converter(device.model).xy_to_rgb(device.info["xy"][0], device.info["xy"][1])
     payload = {
         "red": r,
@@ -159,7 +159,7 @@ def get_color(host: str, device: Device):
         "status": 0,
         "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
     }
-    err, body = get(host, device.number)
+    err, body = get(device.bridge.host, device.number)
     if err:
         logger.warning("get color for '{}' failed - using possibly stale data - {}".format(device.id, body))
     else:
@@ -170,9 +170,9 @@ def get_color(host: str, device: Device):
     return payload
 
 
-def set_brightness(host: str, device: Device, brightness: int, duration: float):
+def set_brightness(device: Device, brightness: int, duration: float):
     err, body = put(
-        host,
+        device.bridge.host,
         device.number,
         {
             "on": True,
@@ -185,13 +185,13 @@ def set_brightness(host: str, device: Device, brightness: int, duration: float):
     return {"status": err}
 
 
-def get_brightness(host: str, device: Device):
+def get_brightness(device: Device):
     payload = {
         "brightness": round(device.info["bri"] * 100 / 255),
         "status": 0,
         "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
     }
-    err, body = get(host, device.number)
+    err, body = get(device.bridge.host, device.number)
     if err:
         logger.warning("get brightness for '{}' failed - using possibly stale data - {}".format(device.id, body))
     else:
@@ -199,9 +199,9 @@ def get_brightness(host: str, device: Device):
     return payload
 
 
-def set_kelvin(host: str, device: Device, kelvin: int, duration: float):
+def set_kelvin(device: Device, kelvin: int, duration: float):
     err, body = put(
-        host,
+        device.bridge.host,
         device.number,
         {
             "on": True,
@@ -214,13 +214,13 @@ def set_kelvin(host: str, device: Device, kelvin: int, duration: float):
     return {"status": err}
 
 
-def get_kelvin(host: str, device: Device):
+def get_kelvin(device: Device):
     payload = {
         "kelvin": round(round(1000000 / device.info["ct"]) / 10) * 10,
         "status": 0,
         "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
     }
-    err, body = get(host, device.number)
+    err, body = get(device.bridge.host, device.number)
     if err:
         logger.warning("get brightness for '{}' failed - using possibly stale data - {}".format(device.id, body))
     else:
