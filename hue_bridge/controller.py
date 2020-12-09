@@ -48,7 +48,7 @@ class Worker(threading.Thread):
                 dev_id, srv_id, cmd = self.__command_queue.get(timeout=30)
                 logger.debug("{}: '{}' <- '{}'".format(self.name, srv_id, cmd))
                 try:
-                    if cmd[mgw_dc.com.command.data]:
+                    if cmd.get(mgw_dc.com.command.data):
                         data = service_map[srv_id](self.__hue_bridge.host, self.__device, **json.loads(cmd[mgw_dc.com.command.data]))
                     else:
                         data = service_map[srv_id](self.__hue_bridge.host, self.__device)
