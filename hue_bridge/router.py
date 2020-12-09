@@ -36,4 +36,4 @@ class Router:
         try:
             self.cmd_queue.put_nowait((*mgw_dc.com.parse_command_topic(topic), json.loads(payload)))
         except Exception as ex:
-            logger.error(ex)
+            logger.error("can't route message - {}\n{}: {}".format(ex, topic, payload))
