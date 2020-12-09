@@ -176,3 +176,6 @@ class Monitor(Thread):
             except Exception as ex:
                 self.__refresh_flag = True
                 logger.error("setting and subscribing device '{}' failed - {}".format(device.id, ex))
+
+    def schedule_refresh(self):
+        self.__refresh_flag = True
