@@ -45,6 +45,7 @@ class MQTTClient:
     def __on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             logger.info("connected to '{}'".format(conf.MsgBroker.host))
+            self.__client.subscribe(mgw_dc.dm.gen_refresh_topic(), 1)
             self.on_connect()
         else:
             logger.error("could not connect to '{}' - {}".format(conf.MsgBroker.host, paho.mqtt.client.connack_string(rc)))
