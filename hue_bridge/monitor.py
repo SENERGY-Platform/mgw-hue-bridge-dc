@@ -90,7 +90,7 @@ class Monitor(Thread):
             self.__mqtt_client.publish(
                 topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
                 payload=json.dumps(mgw_dc.dm.gen_delete_device_msg(device)),
-                qos=2
+                qos=1
             )
             try:
                 self.__mqtt_client.unsubscribe(topic=mgw_dc.com.gen_command_topic(device.id))
@@ -112,7 +112,7 @@ class Monitor(Thread):
             self.__mqtt_client.publish(
                 topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
                 payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
-                qos=2
+                qos=1
             )
             self.__mqtt_client.subscribe(topic=mgw_dc.com.gen_command_topic(device_id), qos=1)
             self.__device_pool[device.id] = device
@@ -132,7 +132,7 @@ class Monitor(Thread):
                     self.__mqtt_client.publish(
                         topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
                         payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
-                        qos=2
+                        qos=1
                     )
                 except Exception as ex:
                     device.name = backup["name"]
@@ -172,7 +172,7 @@ class Monitor(Thread):
                 self.__mqtt_client.publish(
                     topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
                     payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
-                    qos=2
+                    qos=1
                 )
                 self.__mqtt_client.subscribe(topic=mgw_dc.com.gen_command_topic(device.id), qos=1)
             except Exception as ex:
