@@ -129,3 +129,6 @@ class Controller(threading.Thread):
             logger.debug("stopping '{}'".format(worker.name))
             worker.stop()
             del self.__worker_pool[worker_id]
+
+    def put_command(self, cmd: tuple):
+        self.__command_queue.put_nowait(cmd)
