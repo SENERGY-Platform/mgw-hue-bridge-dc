@@ -46,6 +46,8 @@ class Monitor(Thread):
             queried_devices = self.__queryBridge()
             if queried_devices:
                 self.__evaluate(queried_devices)
+            if self.__refresh_flag:
+                self.__refresh_devices()
             time.sleep(conf.Discovery.device_query_delay)
 
     def __queryBridge(self):
