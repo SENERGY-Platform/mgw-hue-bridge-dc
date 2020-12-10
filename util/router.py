@@ -18,7 +18,7 @@
 __all__ = ("Router", )
 
 
-from util import getLogger
+from .logger import getLogger
 import typing
 import mgw_dc
 

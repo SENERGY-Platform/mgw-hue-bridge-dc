@@ -15,8 +15,8 @@
 """
 
 
-from util import initLogger, conf, MQTTClient, handle_sigterm, delay_start
-from hue_bridge import HueBridge, Monitor, Controller, Router
+from util import initLogger, conf, MQTTClient, handle_sigterm, delay_start, Router
+from hue_bridge import HueBridge, Monitor, Controller
 import signal
 
 
