@@ -23,7 +23,8 @@ import signal
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, handle_sigterm)
     signal.signal(signal.SIGINT, handle_sigterm)
-    delay_start()
+    if conf.StartDelay.enabled:
+        delay_start(conf.StartDelay.min, conf.StartDelay.max)
     initLogger(conf.Logger.level)
     try:
         device_pool = dict()

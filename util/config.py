@@ -61,6 +61,12 @@ class Conf:
         delay = 0.25
 
     @simple_env_var.section
+    class StartDelay:
+        enabled = False
+        min = 5
+        max = 20
+
+    @simple_env_var.section
     class Senergy:
         dt_extended_color_light = None
         dt_on_off_plug_in_unit = None
