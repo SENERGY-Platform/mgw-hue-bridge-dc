@@ -18,10 +18,9 @@
 __all__ = ("Controller", )
 
 
-from util import getLogger, conf, MQTTClient
+from util import getLogger, MQTTClient
 from .device import Device
 from .service import service_map
-from .discovery import HueBridge
 import threading
 import queue
 import time
