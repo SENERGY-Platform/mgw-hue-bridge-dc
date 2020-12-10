@@ -56,11 +56,6 @@ class Conf:
         timeout = 5
 
     @simple_env_var.section
-    class Controller:
-        max_command_age = 180
-        delay = 0.25
-
-    @simple_env_var.section
     class StartDelay:
         enabled = False
         min = 5
