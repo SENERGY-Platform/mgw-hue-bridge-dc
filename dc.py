@@ -24,8 +24,8 @@ initLogger(conf.Logger.level)
 
 
 if __name__ == '__main__':
-    signal.signal(signal.SIGTERM, sigtermHandler)
-    signal.signal(signal.SIGINT, sigtermHandler)
+    signal.signal(signal.SIGTERM, handle_sigterm)
+    signal.signal(signal.SIGINT, handle_sigterm)
     try:
         device_pool = dict()
         mqtt_client = MQTTClient()

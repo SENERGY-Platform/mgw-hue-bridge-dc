@@ -27,6 +27,6 @@ __all__ = (
 )
 
 
-def sigtermHandler(_signo, _stack_frame):
-    print("\ngot signal '{}' - exiting ...\n".format(_signo))
+def handle_sigterm(signo, stack_frame):
+    print("\ngot signal '{}' - exiting ...\n".format(signo))
     sys.exit(0)
