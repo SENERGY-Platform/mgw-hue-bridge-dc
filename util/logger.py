@@ -40,14 +40,9 @@ date_fmt = '%m.%d.%Y %I:%M:%S %p'
 handler = logging.StreamHandler()
 handler.setFormatter(logging.Formatter(fmt=msg_fmt, datefmt=date_fmt))
 
-
 logger = logging.getLogger("hue-bridge-dc")
 logger.propagate = False
 logger.addHandler(handler)
-
-conf_logger = logging.getLogger("simple-env-var")
-conf_logger.addHandler(handler)
-conf_logger.setLevel(logging.INFO)
 
 
 def initLogger(level):
