@@ -19,7 +19,6 @@ __all__ = ("HueBridge", )
 
 
 from util import getLogger, conf
-import urllib3
 import urllib.parse
 import threading
 import subprocess
@@ -29,8 +28,6 @@ import requests
 
 
 logger = getLogger(__name__.split(".", 1)[-1])
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 def ping(host) -> bool:
