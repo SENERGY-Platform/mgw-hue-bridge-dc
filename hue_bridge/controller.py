@@ -117,10 +117,15 @@ class Controller(threading.Thread):
                     worker.execute(cmd)
                 except KeyError:
                     logger.error("received command for unknown device '{}'".format(cmd[mgw_dc.com.command.id]))
+                except Exception as ex:
+                    logger.error("routing command to worker failed - {}".format(ex))
             except queue.Empty:
-                if time.time() - garbage_collector_time > 120:
-                    self.__collectGarbage()
-                    garbage_collector_time = time.time()
+                try:
+                    if time.time() - garbage_collector_time > 120:
+                        self.__collectGarbage()
+                        garbage_collector_time = time.time()
+                except Exception as ex:
+                    logger.error("collecting garbage workers failed - {}".format(ex))
 
     def __collectGarbage(self):
         garbage_workers = set(self.__worker_pool) - set(self.__device_pool)
