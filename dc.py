@@ -15,7 +15,7 @@
 """
 
 
-from util import initLogger, conf, MQTTClient, sigtermHandler
+from util import initLogger, conf, MQTTClient, handle_sigterm, delay_start
 from hue_bridge import HueBridge, Monitor, Controller, Router
 import signal
 
@@ -23,6 +23,7 @@ import signal
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, handle_sigterm)
     signal.signal(signal.SIGINT, handle_sigterm)
+    delay_start()
     initLogger(conf.Logger.level)
     try:
         device_pool = dict()

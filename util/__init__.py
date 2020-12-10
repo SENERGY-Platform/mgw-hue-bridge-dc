@@ -14,10 +14,12 @@
    limitations under the License.
 """
 
-from .logger import *
 from .config import *
+from .logger import *
 from .mqtt import *
 import sys
+import random
+import time
 
 
 __all__ = (
@@ -30,3 +32,9 @@ __all__ = (
 def handle_sigterm(signo, stack_frame):
     print("\ngot signal '{}' - exiting ...\n".format(signo))
     sys.exit(0)
+
+
+def delay_start():
+    delay = random.randint(5, 20)
+    print("delaying start for {}s".format(delay))
+    time.sleep(delay)
