@@ -20,12 +20,10 @@ from hue_bridge import HueBridge, Monitor, Controller, Router
 import signal
 
 
-initLogger(conf.Logger.level)
-
-
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, handle_sigterm)
     signal.signal(signal.SIGINT, handle_sigterm)
+    initLogger(conf.Logger.level)
     try:
         device_pool = dict()
         mqtt_client = MQTTClient()
