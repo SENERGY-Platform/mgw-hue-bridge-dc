@@ -54,6 +54,7 @@ class Conf:
         check_delay = 60
         check_fail_safe = 2
         timeout = 5
+        ip_file = "/opt/host_ip"
 
     @simple_env_var.section
     class StartDelay:
