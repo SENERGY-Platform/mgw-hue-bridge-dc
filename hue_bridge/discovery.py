@@ -20,11 +20,9 @@ __all__ = ("HueBridge", )
 
 from util import get_logger, conf
 import urllib3
-import urllib.parse
 import threading
 import subprocess
 import time
-import socket
 import requests
 
 
