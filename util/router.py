@@ -18,12 +18,12 @@
 __all__ = ("Router", )
 
 
-from .logger import getLogger
+from .logger import get_logger
 import typing
 import mgw_dc
 
 
-logger = getLogger(__name__.split(".", 1)[-1])
+logger = get_logger(__name__.split(".", 1)[-1])
 
 
 class Router:

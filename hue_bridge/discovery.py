@@ -18,7 +18,7 @@
 __all__ = ("HueBridge", )
 
 
-from util import getLogger, conf
+from util import get_logger, conf
 import urllib3
 import urllib.parse
 import threading
@@ -28,7 +28,7 @@ import socket
 import requests
 
 
-logger = getLogger(__name__.split(".", 1)[-1])
+logger = get_logger(__name__.split(".", 1)[-1])
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 

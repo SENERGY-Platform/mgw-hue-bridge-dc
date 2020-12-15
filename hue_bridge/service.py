@@ -18,14 +18,14 @@
 __all__ = ("service_map", )
 
 
-from util import getLogger, conf
+from util import get_logger, conf
 from .device import Device
 import rgbxy
 import datetime
 import requests
 
 
-logger = getLogger(__name__.split(".", 1)[-1])
+logger = get_logger(__name__.split(".", 1)[-1])
 
 converter_pool = dict()
 

@@ -18,7 +18,7 @@
 __all__ = ("Controller", )
 
 
-from util import getLogger, MQTTClient
+from util import get_logger, MQTTClient
 from .device import Device
 from .service import service_map
 import threading
@@ -28,7 +28,7 @@ import json
 import mgw_dc
 
 
-logger = getLogger(__name__.split(".", 1)[-1])
+logger = get_logger(__name__.split(".", 1)[-1])
 
 
 class Worker(threading.Thread):
