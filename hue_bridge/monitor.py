@@ -42,8 +42,8 @@ class Monitor(threading.Thread):
         self.__lock = threading.Lock()
 
     def run(self):
-        while not self.__mqtt_client.connected():
-            time.sleep(2)
+        if not self.__mqtt_client.connected():
+            time.sleep(3)
         logger.info("starting '{}' ...".format(self.name))
         while True:
             if self.__refresh_flag:
