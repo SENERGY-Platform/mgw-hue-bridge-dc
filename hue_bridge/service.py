@@ -131,7 +131,7 @@ def get_power(device: Device):
     if err:
         logger.warning("get power for '{}' failed - using possibly stale data - {}".format(device.id, body))
     else:
-        payload["on"] = body["on"]
+        payload["power"] = body["on"]
     return payload
 
 
