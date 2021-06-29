@@ -115,7 +115,7 @@ class Controller(threading.Thread):
                         worker = self.__worker_pool[device.id]
                     worker.execute(cmd)
                 except KeyError:
-                    logger.error("received command for unknown device '{}'".format(cmd[mgw_dc.com.command.id]))
+                    logger.error("received command for unknown device '{}'".format(cmd[0]))
                 except Exception as ex:
                     logger.error("routing command to worker failed - {}".format(ex))
             except queue.Empty:
