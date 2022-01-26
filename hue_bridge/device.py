@@ -23,34 +23,49 @@ import mgw_dc
 
 
 class Device(mgw_dc.dm.Device):
-    __type_map = {
-        "Extended color light": conf.Senergy.dt_extended_color_light,
-        "Color light": conf.Senergy.dt_color_light,
-        "On/Off plug-in unit": conf.Senergy.dt_on_off_plug_in_unit
-    }
-
-    def __init__(self, id: str, name: str, type: str, model: str, number: str, info: dict, bridge: HueBridge):
-        super().__init__(id, name, Device.__type_map[type])
-        self.model = model
-        self.number = number
-        self.info = info
+    def __init__(self, id: str, type: str, meta_data: dict, data: dict, bridge: HueBridge):
+        super().__init__(id, meta_data["name"], type)
+        self.meta_data = meta_data
+        self.data = data
         self.bridge = bridge
 
     @property
-    def info(self) -> dict:
-        return self.__info
+    def number(self):
+        return self.__meta_data["number"]
 
-    @info.setter
-    def info(self, obj: dict):
-        self.__info = obj
-        self.state = mgw_dc.dm.device_state.online if obj["reachable"] else mgw_dc.dm.device_state.offline
+    @property
+    def model_id(self):
+        return self.__meta_data["model_id"]
 
-    def __iter__(self):
-        items = (
-            ("name", self.name),
-            ("model", self.model),
-            ("number", self.number),
-            ("info", self.info)
-        )
-        for item in items:
-            yield item
+    # @property
+    # def api(self):
+    #     return self.__meta_data["api"]
+
+    @property
+    def meta_data(self) -> dict:
+        return self.__meta_data
+
+    @meta_data.setter
+    def meta_data(self, obj: dict):
+        self.__meta_data = obj
+        self.name = self.__meta_data["name"]
+        self.attributes = [
+            mgw_dc.dm.gen_attribute("manufacturer", self.__meta_data["manufacturer_name"]),
+            mgw_dc.dm.gen_attribute("model", self.__meta_data["model_id"]),
+            mgw_dc.dm.gen_attribute("firmware", self.__meta_data["sw_version"])
+        ]
+
+    @property
+    def data(self) -> dict:
+        return self.__data
+
+    @data.setter
+    def data(self, obj: dict):
+        self.__data = obj
+        if self.__data["state"].get("reachable") or self.__data["config"].get("reachable"):
+            self.state = mgw_dc.dm.device_state.online
+        else:
+            self.state = mgw_dc.dm.device_state.offline
+
+    def __str__(self):
+        return super().__str__(meta_data=self.meta_data, data=self.data)

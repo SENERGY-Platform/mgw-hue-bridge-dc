@@ -31,6 +31,11 @@ if __name__ == '__main__':
     if conf.StartDelay.enabled:
         delay_start(conf.StartDelay.min, conf.StartDelay.max)
     init_logger(conf.Logger.level)
+    type_map = {
+        "Extended color light": conf.Senergy.dt_extended_color_light,
+        "Color light": conf.Senergy.dt_color_light,
+        "On/Off plug-in unit": conf.Senergy.dt_on_off_plug_in_unit
+    }
     try:
         device_pool = dict()
         mqtt_client = MQTTClient()
