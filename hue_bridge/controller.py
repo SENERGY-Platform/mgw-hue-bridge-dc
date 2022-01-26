@@ -40,7 +40,7 @@ class Worker(threading.Thread):
         self.__command_queue = queue.Queue()
 
     def run(self) -> None:
-        logger.debug("'{}': starting ...".format(self.name))
+        logger.debug("{}: starting ...".format(self.name))
         while not self.__stop:
             try:
                 dev_id, srv_id, cmd = self.__command_queue.get(timeout=30)
