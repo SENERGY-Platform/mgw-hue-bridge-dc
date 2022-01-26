@@ -93,7 +93,7 @@ def discover_NUPnP(bridge_id, nupnp_url, timeout) -> str:
             host_list = response.json()
             for host in host_list:
                 try:
-                    if host.get('id').upper() in bridge_id:
+                    if bridge_id in host.get('id').upper():
                         return host.get('internalipaddress')
                 except AttributeError:
                     logger.error("could not extract host ip from '{}'".format(host))
@@ -120,7 +120,7 @@ def validate_host(host, bridge_id, timeout) -> bool:
         )
         if response.status_code == 200:
             host_info = response.json()
-            if host_info.get('bridgeid') in bridge_id:
+            if bridge_id in  host_info.get('bridgeid'):
                 return True
     except Exception:
         pass
