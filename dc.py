@@ -34,6 +34,8 @@ if __name__ == '__main__':
     type_map = {
         "Extended color light": conf.Senergy.dt_extended_color_light,
         "Color light": conf.Senergy.dt_color_light,
+        "Color temperature light": conf.Senergy.dt_color_temperature_light,
+        "Dimmable light": conf.Senergy.dt_dimmable_light,
         "On/Off plug-in unit": conf.Senergy.dt_on_off_plug_in_unit
     }
     try:

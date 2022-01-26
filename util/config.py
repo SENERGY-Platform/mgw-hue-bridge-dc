@@ -66,3 +66,5 @@ class Conf:
         dt_extended_color_light = None
         dt_on_off_plug_in_unit = None
         dt_color_light = None
+        dt_color_temperature_light = None
+        dt_dimmable_light = None
