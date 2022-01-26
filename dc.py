@@ -15,7 +15,7 @@
 """
 
 
-from util import init_logger, conf, MQTTClient, handle_sigterm, delay_start, Router
+from util import init_logger, Conf, MQTTClient, handle_sigterm, delay_start, Router
 from hue_bridge import HueBridge, Monitor, Controller
 import signal
 
@@ -23,6 +23,11 @@ import signal
 if __name__ == '__main__':
     signal.signal(signal.SIGTERM, handle_sigterm)
     signal.signal(signal.SIGINT, handle_sigterm)
+    conf = Conf()
+    if not all((conf.Bridge.id, conf.Bridge.api_key)):
+        exit('Please provide Hue Bridge information')
+    if not all((conf.Senergy.dt_extended_color_light, conf.Senergy.dt_on_off_plug_in_unit, conf.Senergy.dt_color_light)):
+        exit('Please provide a SENERGY device types')
     if conf.StartDelay.enabled:
         delay_start(conf.StartDelay.min, conf.StartDelay.max)
     init_logger(conf.Logger.level)

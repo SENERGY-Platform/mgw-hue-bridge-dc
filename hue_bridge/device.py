@@ -18,7 +18,6 @@
 __all__ = ("Device", )
 
 
-from util import conf
 from .discovery import HueBridge
 import mgw_dc
 

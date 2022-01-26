@@ -18,7 +18,7 @@
 __all__ = ("HueBridge", )
 
 
-from util import get_logger, conf
+from util import get_logger
 import urllib3
 import threading
 import subprocess
@@ -35,9 +35,9 @@ def ping(host) -> bool:
     return subprocess.call(['ping', '-c', '2', '-t', '2', host], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
 
 
-def get_local_ip() -> str:
+def get_local_ip(ip_file) -> str:
     try:
-        with open(conf.Discovery.ip_file, "r") as file:
+        with open(ip_file, "r") as file:
             ip_addr = file.readline().strip()
         if ip_addr:
             logger.debug("host ip address is '{}'".format(ip_addr))
@@ -64,8 +64,8 @@ def discover_hosts_worker(ip_range, alive_hosts):
             alive_hosts.append(ip)
 
 
-def discover_hosts() -> list:
-    ip_range = get_ip_range(get_local_ip())
+def discover_hosts(ip_file) -> list:
+    ip_range = get_ip_range(get_local_ip(ip_file))
     logger.debug("scanning ip range '{}-255' ...".format(ip_range[0]))
     alive_hosts = list()
     workers = list()
@@ -86,9 +86,9 @@ def discover_hosts() -> list:
     return alive_hosts
 
 
-def discover_NUPnP(bridge_id) -> str:
+def discover_NUPnP(bridge_id, nupnp_url, timeout) -> str:
     try:
-        response = requests.get(conf.Discovery.nupnp_url, timeout=conf.Discovery.timeout)
+        response = requests.get(nupnp_url, timeout=timeout)
         if response.status_code == 200:
             host_list = response.json()
             for host in host_list:
@@ -101,9 +101,9 @@ def discover_NUPnP(bridge_id) -> str:
         logger.warning("NUPnP discovery failed - {}".format(ex))
 
 
-def probe_host(host) -> bool:
+def probe_host(host, timeout) -> bool:
     try:
-        response = requests.head("http://{}/{}/na/config".format(host, conf.Bridge.api_path), timeout=conf.Discovery.timeout)
+        response = requests.head("http://{}/api/na/config".format(host), timeout=timeout)
         if response.status_code == 200:
                 return True
     except Exception:
@@ -111,12 +111,12 @@ def probe_host(host) -> bool:
     return False
 
 
-def validate_host(host, bridge_id) -> bool:
+def validate_host(host, bridge_id, timeout) -> bool:
     try:
         response = requests.get(
-            "https://{}/{}/na/config".format(host, conf.Bridge.api_path),
+            "https://{}/api/na/config".format(host),
             verify=False,
-            timeout=conf.Discovery.timeout
+            timeout=timeout
         )
         if response.status_code == 200:
             host_info = response.json()
@@ -127,29 +127,29 @@ def validate_host(host, bridge_id) -> bool:
     return False
 
 
-def validate_hosts_worker(hosts, valid_hosts, bridge_id):
+def validate_hosts_worker(hosts, valid_hosts, bridge_id, timeout):
     for host in hosts:
-        if probe_host(host) and validate_host(host, bridge_id):
+        if probe_host(host, timeout) and validate_host(host, bridge_id, timeout):
             valid_hosts[bridge_id] = host
 
 
-def validate_hosts(hosts, bridge_id) -> dict:
+def validate_hosts(hosts, bridge_id, timeout) -> dict:
     valid_hosts = dict()
     workers = list()
     bin = 0
     bin_size = 2
     if len(hosts) <= bin_size:
-        worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts, valid_hosts, bridge_id))
+        worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts, valid_hosts, bridge_id, timeout))
         workers.append(worker)
         worker.start()
     else:
         for i in range(int(len(hosts) / bin_size)):
-            worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts[bin:bin + bin_size], valid_hosts, bridge_id))
+            worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts[bin:bin + bin_size], valid_hosts, bridge_id, timeout))
             workers.append(worker)
             worker.start()
             bin = bin + bin_size
         if hosts[bin:]:
-            worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts[bin:], valid_hosts, bridge_id))
+            worker = threading.Thread(target=validate_hosts_worker, name='validateHostsWorker', args=(hosts[bin:], valid_hosts, bridge_id, timeout))
             workers.append(worker)
             worker.start()
     for worker in workers:
@@ -158,8 +158,15 @@ def validate_hosts(hosts, bridge_id) -> dict:
 
 
 class HueBridge:
-    def __init__(self, id: str):
-        self.__id = id
+    def __init__(self, id: str, api_key: str, nupnp_url: str, ip_file: str, request_timeout: int, delay: int, check_delay: int, check_fail_safe: int):
+        self.__id = id.upper()
+        self.__api_key = api_key
+        self.__nupnp_url = nupnp_url
+        self.__ip_file = ip_file
+        self.__request_timeout = request_timeout
+        self.__delay = delay
+        self.__check_delay = check_delay
+        self.__check_fail_safe = check_fail_safe
         self.__host = None
         self.__thread = threading.Thread(name="discovery-{}".format(id), target=self.__rediscover, daemon=True)
 
@@ -175,18 +182,18 @@ class HueBridge:
         while not self.__host:
             self.__host = self.__discover()
             if not self.__host:
-                time.sleep(conf.Discovery.delay)
+                time.sleep(self.__delay)
         logger.info("discovered '{}' at '{}'".format(self.__id, self.__host))
         self.__thread.start()
 
     def __discover(self):
         logger.info("trying to discover '{}' ...".format(self.__id))
         try:
-            host = discover_NUPnP(self.__id)
-            if host and validate_host(host, self.__id):
+            host = discover_NUPnP(self.__id, self.__nupnp_url, self.__request_timeout)
+            if host and validate_host(host, self.__id, self.__request_timeout):
                 return host
             logger.warning("could not discover '{}' via NUPnP - reverting to ip range scan".format(self.__id))
-            valid_hosts = validate_hosts(discover_hosts(), self.__id)
+            valid_hosts = validate_hosts(discover_hosts(self.__ip_file), self.__id, self.__request_timeout)
             if valid_hosts:
                 return valid_hosts[self.__id]
             logger.warning("ip range scan yielded no results for '{}'".format(self.__id))
@@ -197,9 +204,9 @@ class HueBridge:
     def __rediscover(self):
         fail_safe = 0
         while True:
-            delay = conf.Discovery.check_delay
-            if not validate_host(self.__host, self.__id):
-                if fail_safe > conf.Discovery.check_fail_safe:
+            delay = self.__check_delay
+            if not validate_host(self.__host, self.__id, self.__request_timeout):
+                if fail_safe > self.__check_fail_safe:
                     logger.warning("location of '{}' seems to have changed or is not reachable".format(self.__id))
                     host = self.__discover()
                     if host:
@@ -207,7 +214,7 @@ class HueBridge:
                         self.__host = host
                         logger.info("discovered '{}' at '{}'".format(self.__id, self.__host))
                     else:
-                        delay = conf.Discovery.delay
+                        delay = self.__delay
                 else:
                     fail_safe += 1
             else:

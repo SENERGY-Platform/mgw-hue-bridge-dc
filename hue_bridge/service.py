@@ -18,7 +18,7 @@
 __all__ = ("service_map", )
 
 
-from util import get_logger, conf
+from util import get_logger
 from .device import Device
 import rgbxy
 import datetime
@@ -51,18 +51,13 @@ def get_converter(model: str):
     return converter_pool[model]
 
 
-def put(host: str, d_number: str, data: dict):
+def put(url: str, payload: dict, timeout: int):
     try:
         resp = requests.put(
-            url="https://{}/{}/{}/lights/{}/state".format(
-                host,
-                conf.Bridge.api_path,
-                conf.Bridge.api_key,
-                d_number
-            ),
-            json=data,
+            url=url,
+            json=payload,
             verify=False,
-            timeout=conf.Discovery.timeout
+            timeout=timeout
         )
         if resp.status_code == 200:
             resp = resp.json()
@@ -79,17 +74,12 @@ def put(host: str, d_number: str, data: dict):
         return 1, "could not send request to hue bridge - {}".format(ex)
 
 
-def get(host: str, d_number: str):
+def get(url: str, timeout: int):
     try:
         resp = requests.get(
-            url="https://{}/{}/{}/lights/{}".format(
-                host,
-                conf.Bridge.api_path,
-                conf.Bridge.api_key,
-                d_number
-            ),
+            url=url,
             verify=False,
-            timeout=conf.Discovery.timeout
+            timeout=timeout
         )
         if resp.status_code == 200:
             resp = resp.json()

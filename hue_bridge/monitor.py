@@ -18,7 +18,7 @@
 __all__ = ("Monitor", )
 
 
-from util import get_logger, conf, MQTTClient
+from util import get_logger, Conf, MQTTClient
 from .device import Device
 from .discovery import HueBridge
 import threading
@@ -33,11 +33,16 @@ logger = get_logger(__name__.split(".", 1)[-1])
 
 
 class Monitor(threading.Thread):
-    def __init__(self, hue_bridge: HueBridge, mqtt_client: MQTTClient, device_pool: typing.Dict[str, Device]):
+    def __init__(self, hue_bridge: HueBridge, mqtt_client: MQTTClient, device_pool: typing.Dict[str, Device], type_map: typing.Dict, query_delay: int, request_timeout: int, device_id_prefix: str, dc_id: str):
         super().__init__(name="monitor-{}".format(hue_bridge.id), daemon=True)
         self.__hue_bridge = hue_bridge
         self.__mqtt_client = mqtt_client
         self.__device_pool = device_pool
+        self.__type_map = type_map
+        self.__query_delay = query_delay
+        self.__request_timeout = request_timeout
+        self.__device_id_prefix = device_id_prefix
+        self.__dc_id = dc_id
         self.__refresh_flag = 0
         self.__lock = threading.Lock()
 
@@ -51,7 +56,7 @@ class Monitor(threading.Thread):
             queried_devices = self.__queryBridge()
             if queried_devices:
                 self.__evaluate(queried_devices)
-            time.sleep(conf.Discovery.device_query_delay)
+            time.sleep(self.__query_delay)
 
     def __queryBridge(self):
         try:
@@ -91,7 +96,7 @@ class Monitor(threading.Thread):
             device = self.__device_pool[device_id]
             logger.info("can't find '{}' with id '{}'".format(device.name, device.id))
             self.__mqtt_client.publish(
-                topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
+                topic=mgw_dc.dm.gen_device_topic(self.__dc_id),
                 payload=json.dumps(mgw_dc.dm.gen_delete_device_msg(device)),
                 qos=1
             )
@@ -113,7 +118,7 @@ class Monitor(threading.Thread):
             )
             logger.info("found '{}' with id '{}'".format(device.name, device_id))
             self.__mqtt_client.publish(
-                topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
+                topic=mgw_dc.dm.gen_device_topic(self.__dc_id),
                 payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
                 qos=1
             )
@@ -175,7 +180,7 @@ class Monitor(threading.Thread):
         for device in self.__device_pool.values():
             try:
                 self.__mqtt_client.publish(
-                    topic=mgw_dc.dm.gen_device_topic(conf.Client.id),
+                    topic=mgw_dc.dm.gen_device_topic(self.__dc_id),
                     payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
                     qos=1
                 )
@@ -190,4 +195,3 @@ class Monitor(threading.Thread):
     def schedule_refresh(self, subscribe: bool = False):
         with self.__lock:
             self.__refresh_flag = max(self.__refresh_flag, int(subscribe) + 1)
-
