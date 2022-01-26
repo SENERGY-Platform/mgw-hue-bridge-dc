@@ -98,26 +98,29 @@ def get(url: str, timeout: int):
 ### Services ###
 
 
-def set_power(device: Device, power: bool):
+def set_light_power(device: Device, power: bool):
     err, body = put(
-        device.bridge.host,
-        device.number,
-        {
+        url=f"https://{device.bridge.host}/api/{device.bridge.api_key}/lights/{device.number}/state",
+        payload={
             "on": power
-        }
+        },
+        timeout=device.bridge.request_timeout
     )
     if err:
         logger.error("set power for '{}' failed - {}".format(device.id, body))
     return {"status": err}
 
 
-def get_power(device: Device):
+def get_light_power(device: Device):
     payload = {
-        "power": device.info["on"],
+        "power": device.data["state"]["on"],
         "status": 0,
         "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
     }
-    err, body = get(device.bridge.host, device.number)
+    err, body = get(
+        url=f"https://{device.bridge.host}/api/{device.bridge.api_key}/lights/{device.number}",
+        timeout=device.bridge.request_timeout
+    )
     if err:
         logger.warning("get power for '{}' failed - using possibly stale data - {}".format(device.id, body))
     else:
@@ -125,23 +128,23 @@ def get_power(device: Device):
     return payload
 
 
-def set_color(device: Device, red: int, green: int, blue: int, duration: float):
+def set_light_color(device: Device, red: int, green: int, blue: int, duration: float):
     err, body = put(
-        device.bridge.host,
-        device.number,
-        {
+        url=f"https://{device.bridge.host}/api/{device.bridge.api_key}/lights/{device.number}/state",
+        payload={
             "on": True,
-            "xy": get_converter(device.model).rgb_to_xy(red=red, green=green, blue=blue),
+            "xy": get_converter(device.model_id).rgb_to_xy(red=red, green=green, blue=blue),
             "transitiontime": int(duration * 10)
-        }
+        },
+        timeout=device.bridge.request_timeout
     )
     if err:
         logger.error("set color for '{}' failed - {}".format(device.id, body))
     return {"status": err}
 
 
-def get_color(device: Device):
-    r, g, b = get_converter(device.model).xy_to_rgb(device.info["xy"][0], device.info["xy"][1])
+def get_light_color(device: Device):
+    r, g, b = get_converter(device.model_id).xy_to_rgb(device.data["state"]["xy"][0], device.data["state"]["xy"][1])
     payload = {
         "red": r,
         "green": g,
@@ -149,39 +152,45 @@ def get_color(device: Device):
         "status": 0,
         "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
     }
-    err, body = get(device.bridge.host, device.number)
+    err, body = get(
+        url=f"https://{device.bridge.host}/api/{device.bridge.api_key}/lights/{device.number}",
+        timeout=device.bridge.request_timeout
+    )
     if err:
         logger.warning("get color for '{}' failed - using possibly stale data - {}".format(device.id, body))
     else:
-        r, g, b = get_converter(device.model).xy_to_rgb(body["xy"][0], body["xy"][1])
+        r, g, b = get_converter(device.model_id).xy_to_rgb(body["xy"][0], body["xy"][1])
         payload["red"] = r
         payload["green"] = g
         payload["blue"] = b
     return payload
 
 
-def set_brightness(device: Device, brightness: int, duration: float):
+def set_light_brightness(device: Device, brightness: int, duration: float):
     err, body = put(
-        device.bridge.host,
-        device.number,
-        {
+        url=f"https://{device.bridge.host}/api/{device.bridge.api_key}/lights/{device.number}/state",
+        payload={
             "on": True,
             "bri": round(brightness * 255 / 100),
             "transitiontime": int(duration * 10)
-        }
+        },
+        timeout=device.bridge.request_timeout
     )
     if err:
         logger.error("set brightness for '{}' failed - {}".format(device.id, body))
     return {"status": err}
 
 
-def get_brightness(device: Device):
+def get_light_brightness(device: Device):
     payload = {
-        "brightness": round(device.info["bri"] * 100 / 255),
+        "brightness": round(device.data["state"]["bri"] * 100 / 255),
         "status": 0,
         "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
     }
-    err, body = get(device.bridge.host, device.number)
+    err, body = get(
+        url=f"https://{device.bridge.host}/api/{device.bridge.api_key}/lights/{device.number}",
+        timeout=device.bridge.request_timeout
+    )
     if err:
         logger.warning("get brightness for '{}' failed - using possibly stale data - {}".format(device.id, body))
     else:
@@ -189,28 +198,31 @@ def get_brightness(device: Device):
     return payload
 
 
-def set_kelvin(device: Device, kelvin: int, duration: float):
+def set_light_kelvin(device: Device, kelvin: int, duration: float):
     err, body = put(
-        device.bridge.host,
-        device.number,
-        {
+        url=f"https://{device.bridge.host}/api/{device.bridge.api_key}/lights/{device.number}/state",
+        payload={
             "on": True,
             "ct": round(1000000 / kelvin),
             "transitiontime": int(duration * 10)
-        }
+        },
+        timeout=device.bridge.request_timeout
     )
     if err:
         logger.error("set kelvin for '{}' failed - {}".format(device.id, body))
     return {"status": err}
 
 
-def get_kelvin(device: Device):
+def get_light_kelvin(device: Device):
     payload = {
-        "kelvin": round(round(1000000 / device.info["ct"]) / 10) * 10,
+        "kelvin": round(round(1000000 / device.data["state"]["ct"]) / 10) * 10,
         "status": 0,
         "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
     }
-    err, body = get(device.bridge.host, device.number)
+    err, body = get(
+        url=f"https://{device.bridge.host}/api/{device.bridge.api_key}/lights/{device.number}",
+        timeout=device.bridge.request_timeout
+    )
     if err:
         logger.warning("get brightness for '{}' failed - using possibly stale data - {}".format(device.id, body))
     else:
@@ -219,12 +231,12 @@ def get_kelvin(device: Device):
 
 
 service_map = {
-    "setPower": set_power,
-    "getPower": get_power,
-    "setColor": set_color,
-    "getColor": get_color,
-    "setBrightness": set_brightness,
-    "getBrightness": get_brightness,
-    "setKelvin": set_kelvin,
-    "getKelvin": get_kelvin
+    "setPower": set_light_power,
+    "getPower": get_light_power,
+    "setColor": set_light_color,
+    "getColor": get_light_color,
+    "setBrightness": set_light_brightness,
+    "getBrightness": get_light_brightness,
+    "setKelvin": set_light_kelvin,
+    "getKelvin": get_light_kelvin
 }
