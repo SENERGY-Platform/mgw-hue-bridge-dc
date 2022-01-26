@@ -178,6 +178,14 @@ class HueBridge:
     def id(self):
         return self.__id
 
+    @property
+    def api_key(self):
+        return self.__api_key
+
+    @property
+    def request_timeout(self):
+        return self.__request_timeout
+
     def start_discovery(self):
         while not self.__host:
             self.__host = self.__discover()
