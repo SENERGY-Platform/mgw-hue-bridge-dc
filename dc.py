@@ -38,10 +38,35 @@ if __name__ == '__main__':
     }
     try:
         device_pool = dict()
-        mqtt_client = MQTTClient()
-        hue_bridge = HueBridge(conf.Bridge.id)
+        mqtt_client = MQTTClient(
+            host=conf.MsgBroker.host,
+            port=conf.MsgBroker.port,
+            client_id=conf.Client.id,
+            clean_session=conf.Client.clean_session,
+            keep_alive=conf.Client.keep_alive,
+            sub_lvl_logger=conf.Logger.enable_mqtt
+        )
+        hue_bridge = HueBridge(
+            id=conf.Bridge.id,
+            api_key=conf.Bridge.api_key,
+            nupnp_url=conf.Discovery.nupnp_url,
+            ip_file=conf.Discovery.ip_file,
+            request_timeout=conf.Discovery.timeout,
+            delay=conf.Discovery.delay,
+            check_delay=conf.Discovery.check_delay,
+            check_fail_safe=conf.Discovery.check_fail_safe
+        )
         hue_bridge.start_discovery()
-        bridge_monitor = Monitor(hue_bridge=hue_bridge, mqtt_client=mqtt_client, device_pool=device_pool)
+        bridge_monitor = Monitor(
+            hue_bridge=hue_bridge,
+            mqtt_client=mqtt_client,
+            device_pool=device_pool,
+            type_map=type_map,
+            query_delay=conf.Discovery.device_query_delay,
+            request_timeout=conf.Discovery.timeout,
+            device_id_prefix=conf.Discovery.device_id_prefix,
+            dc_id=conf.Client.id
+        )
         controller = Controller(device_pool=device_pool, mqtt_client=mqtt_client)
         router = Router(bridge_monitor.schedule_refresh, controller.put_command)
         mqtt_client.on_connect = bridge_monitor.schedule_refresh
