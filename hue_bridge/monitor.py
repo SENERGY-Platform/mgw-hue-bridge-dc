@@ -45,6 +45,7 @@ class Monitor(threading.Thread):
         self.__dc_id = dc_id
         self.__refresh_flag = 0
         self.__lock = threading.Lock()
+        self.__unsupported_types = set()
 
     def run(self):
         if not self.__mqtt_client.connected():
@@ -71,7 +72,7 @@ class Monitor(threading.Thread):
                     resp = resp.json()
                     for number, device in resp.items():
                         try:
-                            if "uniqueid" in device:
+                            if device.get("type") in self.__type_map:
                                 devices["{}{}".format(self.__device_id_prefix, device["uniqueid"])] = {
                                     "meta_data": {
                                         "name": device["name"],
@@ -87,6 +88,10 @@ class Monitor(threading.Thread):
                                         "config": device.get("config") or {}
                                     }
                                 }
+                            else:
+                                if device.get("type") not in self.__unsupported_types:
+                                    logger.warning("device type '{}' not supported".format(device.get("type")))
+                                    self.__unsupported_types.add(device.get("type"))
                         except KeyError as ex:
                             logger.error("could not parse device - {}\n{}".format(ex, device))
                 else:
