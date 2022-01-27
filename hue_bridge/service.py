@@ -15,7 +15,7 @@
 """
 
 
-__all__ = ("service_map", )
+__all__ = ("service_map", "event_service_map")
 
 
 from util import get_logger
@@ -252,5 +252,12 @@ service_map = {
     "setBrightness": set_light_brightness,
     "getBrightness": get_light_brightness,
     "setKelvin": set_light_kelvin,
-    "getKelvin": get_light_kelvin
+    "getKelvin": get_light_kelvin,
+    "getPresence": get_sensor_presence,
+    "getBattery": get_sensor_battery
+}
+
+event_service_map = {
+    "presence": "getPresence",
+    "battery": "getBattery"
 }
