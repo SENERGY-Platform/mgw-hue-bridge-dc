@@ -18,7 +18,7 @@
 __all__ = ("Monitor", )
 
 
-from util import get_logger, Conf, MQTTClient
+from util import get_logger, MQTTClient
 from .device import Device
 from .discovery import HueBridge
 import threading
