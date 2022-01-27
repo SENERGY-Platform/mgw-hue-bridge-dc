@@ -230,6 +230,20 @@ def get_light_kelvin(device: Device):
     return payload
 
 
+def get_sensor_presence(device: Device):
+    return {
+        "presence": device.data["state"]["presence"],
+        "time": "{}Z".format(datetime.datetime.strptime(device.data["state"]["lastupdated"], "%Y-%m-%dT%H:%M:%S").isoformat())
+    }
+
+
+def get_sensor_battery(device: Device):
+    return {
+        "battery": device.data["config"]["battery"],
+        "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
+    }
+
+
 service_map = {
     "setPower": set_light_power,
     "getPower": get_light_power,
