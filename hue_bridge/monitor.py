@@ -21,6 +21,7 @@ __all__ = ("Monitor", )
 from util import get_logger, MQTTClient
 from .device import Device
 from .discovery import HueBridge
+from .service import event_service_map, service_map
 import threading
 import time
 import requests
@@ -149,13 +150,21 @@ class Monitor(threading.Thread):
             try:
                 device.data = data
                 if state_bk != device.state:
-                    self.__mqtt_client.publish(
-                        topic=mgw_dc.dm.gen_device_topic(self.__dc_id),
-                        payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
-                        qos=1
-                    )
-                if data_bk["state"] != device.data["state"]:
-                    pass
+                    self.__update_dm(mgw_dc.dm.gen_set_device_msg(device))
+                try:
+                    for data_key in device.data:
+                        for key in set(event_service_map.keys()).intersection(device.data[data_key]):
+                            if data_bk[data_key][key] != device.data[data_key][key]:
+                                try:
+                                    self.__mqtt_client.publish(
+                                        topic=mgw_dc.com.gen_event_topic(device.id, event_service_map[key]),
+                                        payload=json.dumps(service_map[event_service_map[key]](device)),
+                                        qos=1
+                                    )
+                                except Exception as ex:
+                                    logger.error(f"can't send event for '{device.id}' - {ex}")
+                except Exception as ex:
+                    logger.error(f"error handling events for '{device.id}' - {ex}")
             except Exception as ex:
                 device.data = data_bk
                 raise ex
