@@ -36,7 +36,9 @@ if __name__ == '__main__':
         "Color light": conf.Senergy.dt_color_light,
         "Color temperature light": conf.Senergy.dt_color_temperature_light,
         "Dimmable light": conf.Senergy.dt_dimmable_light,
-        "On/Off plug-in unit": conf.Senergy.dt_on_off_plug_in_unit
+        "On/Off plug-in unit": conf.Senergy.dt_on_off_plug_in_unit,
+        "ZLLSwitch": conf.Senergy.dt_zll_switch,
+        "ZLLPresence": conf.Senergy.dt_zll_presence
     }
     try:
         device_pool = dict()
