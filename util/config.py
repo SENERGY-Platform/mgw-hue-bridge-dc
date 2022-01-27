@@ -68,3 +68,5 @@ class Conf:
         dt_color_light = None
         dt_color_temperature_light = None
         dt_dimmable_light = None
+        dt_zll_switch = None
+        dt_zll_presence = None
