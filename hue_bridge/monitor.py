@@ -104,11 +104,7 @@ class Monitor(threading.Thread):
         try:
             device = self.__device_pool[device_id]
             logger.info("can't find '{}' with id '{}'".format(device.name, device.id))
-            self.__mqtt_client.publish(
-                topic=mgw_dc.dm.gen_device_topic(self.__dc_id),
-                payload=json.dumps(mgw_dc.dm.gen_delete_device_msg(device)),
-                qos=1
-            )
+            self.__update_dm(mgw_dc.dm.gen_delete_device_msg(device))
             try:
                 self.__mqtt_client.unsubscribe(topic=mgw_dc.com.gen_command_topic(device.id))
             except Exception as ex:
@@ -126,11 +122,7 @@ class Monitor(threading.Thread):
                 **data
             )
             logger.info("found '{}' with id '{}'".format(device.name, device_id))
-            self.__mqtt_client.publish(
-                topic=mgw_dc.dm.gen_device_topic(self.__dc_id),
-                payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
-                qos=1
-            )
+            self.__update_dm(mgw_dc.dm.gen_set_device_msg(device))
             self.__mqtt_client.subscribe(topic=mgw_dc.com.gen_command_topic(device_id), qos=1)
             self.__device_pool[device.id] = device
         except Exception as ex:
@@ -142,11 +134,7 @@ class Monitor(threading.Thread):
             meta_data_bk = device.data.copy()
             try:
                 device.meta_data = data
-                self.__mqtt_client.publish(
-                    topic=mgw_dc.dm.gen_device_topic(self.__dc_id),
-                    payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
-                    qos=1
-                )
+                self.__update_dm(mgw_dc.dm.gen_set_device_msg(device))
             except Exception as ex:
                 device.meta_data = meta_data_bk
                 raise ex
@@ -207,11 +195,7 @@ class Monitor(threading.Thread):
                 self.__refresh_flag = 0
         for device in self.__device_pool.values():
             try:
-                self.__mqtt_client.publish(
-                    topic=mgw_dc.dm.gen_device_topic(self.__dc_id),
-                    payload=json.dumps(mgw_dc.dm.gen_set_device_msg(device)),
-                    qos=1
-                )
+                self.__update_dm(mgw_dc.dm.gen_set_device_msg(device))
             except Exception as ex:
                 logger.error("setting device '{}' failed - {}".format(device.id, ex))
             if flag > 1:
@@ -219,6 +203,13 @@ class Monitor(threading.Thread):
                     self.__mqtt_client.subscribe(topic=mgw_dc.com.gen_command_topic(device.id), qos=1)
                 except Exception as ex:
                     logger.error("subscribing device '{}' failed - {}".format(device.id, ex))
+
+    def __update_dm(self, msg: dict):
+        self.__mqtt_client.publish(
+            topic=mgw_dc.dm.gen_device_topic(self.__dc_id),
+            payload=json.dumps(msg),
+            qos=1
+        )
 
     def schedule_refresh(self, subscribe: bool = False):
         with self.__lock:
