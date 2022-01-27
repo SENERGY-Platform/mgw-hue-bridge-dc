@@ -239,7 +239,7 @@ def get_sensor_presence(device: Device):
 
 def get_sensor_battery(device: Device):
     return {
-        "battery": device.data["config"]["battery"],
+        "level": device.data["config"]["battery"],
         "time": "{}Z".format(datetime.datetime.utcnow().isoformat())
     }
 
