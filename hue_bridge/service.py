@@ -244,6 +244,13 @@ def get_sensor_battery(device: Device):
     }
 
 
+def get_button_event(device: Device):
+    return {
+        "event": device.data["state"]["buttonevent"],
+        "time": "{}Z".format(datetime.datetime.strptime(device.data["state"]["lastupdated"], "%Y-%m-%dT%H:%M:%S").isoformat())
+    }
+
+
 service_map = {
     "setPower": set_light_power,
     "getPower": get_light_power,
@@ -254,10 +261,12 @@ service_map = {
     "setKelvin": set_light_kelvin,
     "getKelvin": get_light_kelvin,
     "getPresence": get_sensor_presence,
-    "getBattery": get_sensor_battery
+    "getBattery": get_sensor_battery,
+    "getButtonEvent": get_button_event
 }
 
 event_service_map = {
     "presence": "getPresence",
-    "battery": "getBattery"
+    "battery": "getBattery",
+    "buttonevent": "getButtonEvent"
 }
