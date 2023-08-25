@@ -1,0 +1,112 @@
+modfileVersion: "v1"
+id: github.com/SENERGY-Platform/mgw-hue-bridge-dc/mgw-module
+name: Philips Hue Bridge Connector
+description: Connect a Philips Hue Bridge with the gateway.
+license: Apache-2.0 license
+author: InfAI (CC SES)
+version: v0.0.1
+type: device-connector
+deploymentType: single
+dependencies:
+  github.com/SENERGY-Platform/mgw-mqtt-broker:
+    version: "<v2.0.0"
+    requiredServices:
+      broker:
+        - refVar: CONF_MSGBROKER_HOST
+          services:
+            - connector
+services:
+  connector:
+    name: Hue Bridge Connector
+    image: ghcr.io/senergy-platform/hue-bridge-dc:0.0.2
+configs:
+  broker-port:
+    dataType: int
+    value: 1883
+    targets:
+      - refVar: CONF_MSGBROKER_PORT
+        services:
+          - connector
+  dt-extended-color-light:
+    value: urn:infai:ses:device-type:1d0e8fd1-5db3-4f68-81ea-fd7514cd3852
+    targets:
+      - refVar: CONF_SENERGY_DT_EXTENDED_COLOR_LIGHT
+        services:
+          - connector
+  dt-on-off-plug-in-unit:
+    value: urn:infai:ses:device-type:ddc87658-332e-4839-ae5d-b9896f4832d9
+    targets:
+      - refVar: CONF_SENERGY_DT_ON_OFF_PLUG_IN_UNIT
+        services:
+          - connector
+  dt-color-light:
+    value: urn:infai:ses:device-type:b7fb4104-bddb-4649-a25a-efc54a766ea3
+    targets:
+      - refVar: CONF_SENERGY_DT_COLOR_LIGHT
+        services:
+          - connector
+  dt-color-temperature-light:
+    value: urn:infai:ses:device-type:97b985af-ff51-4fb7-9360-1c25526096a9
+    targets:
+      - refVar: CONF_SENERGY_DT_COLOR_TEMPERATURE_LIGHT
+        services:
+          - connector
+  dt-dimmable-light:
+    value: urn:infai:ses:device-type:97426628-b051-435c-8c8b-73fe8bd8e8c9
+    targets:
+      - refVar: CONF_SENERGY_DT_DIMMABLE_LIGHT
+        services:
+          - connector
+  dt-zll-presence:
+    value: urn:infai:ses:device-type:0249f20c-7f26-4b88-8a1e-0956d6eafc20
+    targets:
+      - refVar: CONF_SENERGY_DT_ZLL_PRESENCE
+        services:
+          - connector
+  dt-zll-switch:
+    value: urn:infai:ses:device-type:00a3d158-2161-49ca-ab70-53c2f80a78c2
+    targets:
+      - refVar: CONF_SENERGY_DT_ZLL_SWITCH
+        services:
+          - connector
+  bridge-api-key:
+    targets:
+      - refVar: CONF_BRIDGE_API_KEY
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Hue Bridge API Key
+  bridge-id:
+    targets:
+      - refVar: CONF_BRIDGE_ID
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Hue Bridge ID
+  device-id-prefix:
+    targets:
+      - refVar: CONF_DISCOVERY_DEVICE_ID_PREFIX
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Device ID Prefix
+    optional: true
+  log-level:
+    value: warning
+    options:
+      - info
+      - warning
+      - error
+      - critical
+      - debug
+    targets:
+      - refVar: CONF_LOGGER_LEVEL
+        services:
+          - connector
+    userInput:
+      type: text
+      name: Log level
+    optional: true
