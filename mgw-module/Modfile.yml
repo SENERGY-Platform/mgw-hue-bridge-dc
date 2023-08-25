@@ -4,7 +4,7 @@ name: Philips Hue Bridge Connector
 description: Connect a Philips Hue Bridge with the gateway.
 license: Apache-2.0 license
 author: InfAI (CC SES)
-version: v0.0.1
+version: v0.0.2
 type: device-connector
 deploymentType: single
 dependencies:
@@ -19,6 +19,15 @@ services:
   connector:
     name: Hue Bridge Connector
     image: ghcr.io/senergy-platform/hue-bridge-dc:0.0.2
+secrets:
+  bridge-api-key:
+    type: api-key
+    targets:
+      - refVar: CONF_BRIDGE_API_KEY
+        services:
+          - connector
+    userInput:
+      name: Hue Bridge API Key
 configs:
   broker-port:
     dataType: int
@@ -69,14 +78,6 @@ configs:
       - refVar: CONF_SENERGY_DT_ZLL_SWITCH
         services:
           - connector
-  bridge-api-key:
-    targets:
-      - refVar: CONF_BRIDGE_API_KEY
-        services:
-          - connector
-    userInput:
-      type: text
-      name: Hue Bridge API Key
   bridge-id:
     targets:
       - refVar: CONF_BRIDGE_ID
