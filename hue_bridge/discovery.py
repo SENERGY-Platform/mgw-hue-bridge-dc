@@ -200,11 +200,12 @@ class HueBridge:
             host = discover_NUPnP(self.__id, self.__nupnp_url, self.__request_timeout)
             if host and validate_host(host, self.__id, self.__request_timeout):
                 return host
-            logger.warning("could not discover '{}' via NUPnP - reverting to ip range scan".format(self.__id))
-            valid_hosts = validate_hosts(discover_hosts(self.__ip_file), self.__id, self.__request_timeout)
-            if valid_hosts:
-                return valid_hosts[self.__id]
-            logger.warning("ip range scan yielded no results for '{}'".format(self.__id))
+            logger.warning("could not discover '{}' via NUPnP".format(self.__id))
+            # logger.warning("could not discover '{}' via NUPnP - reverting to ip range scan".format(self.__id))
+            # valid_hosts = validate_hosts(discover_hosts(self.__ip_file), self.__id, self.__request_timeout)
+            # if valid_hosts:
+            #     return valid_hosts[self.__id]
+            # logger.warning("ip range scan yielded no results for '{}'".format(self.__id))
         except Exception as ex:
             logger.error("discovery of '{}' failed - {}".format(self.__id, ex))
         return None
