@@ -4,7 +4,7 @@ name: Philips Hue Bridge Connector
 description: Connect a Philips Hue Bridge with the gateway.
 license: Apache-2.0 license
 author: InfAI (CC SES)
-version: v0.0.2
+version: v0.0.3
 type: device-connector
 deploymentType: single
 dependencies:
@@ -31,7 +31,7 @@ secrets:
 configs:
   broker-port:
     dataType: int
-    value: 1883
+    value: 1881
     targets:
       - refVar: CONF_MSGBROKER_PORT
         services:
